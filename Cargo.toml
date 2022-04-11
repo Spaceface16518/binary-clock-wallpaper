@@ -1,0 +1,21 @@
+[package]
+name = "binary-clock-wallpaper"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "3.1.8", features = ["env", "derive", "terminal_size", "wrap_help"] }
+color-eyre = "0.6.1"
+either = "1.6.1"
+hex = "0.4.3"
+image = "0.24.1"
+memchr = "2.4.1"
+merge = { version = "0.1.0", features = ["derive"] }
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
+serde_with = "1.12.1"
+serde_yaml = "0.8.23"
+smallvec = { version = "1.8.0", features = ["const_generics", "union"] }
+thiserror = "1.0.30"
