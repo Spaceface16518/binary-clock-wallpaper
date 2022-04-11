@@ -8,16 +8,10 @@ use serde::Deserialize;
 #[repr(transparent)]
 pub struct Color([u8; 3]);
 
-#[derive(Debug, thiserror::Error, Clone)]
-pub enum ColorParseError {
-    #[error("error parsing hex: {0}")]
-    HexParseError(#[from] FromHexError),
-}
-
 impl FromStr for Color {
-    type Err = ColorParseError;
+    type Err = FromHexError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+    fn from_str(s: &str) -> Result<Self, FromHexError>{
         Ok(Color(hex::FromHex::from_hex(s.trim_start_matches('#'))?))
     }
 }
