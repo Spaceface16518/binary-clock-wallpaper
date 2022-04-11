@@ -4,9 +4,11 @@ use crate::{
     time_convention::TimeConvention,
 };
 use clap::Parser;
+use color_eyre::eyre::{eyre, bail};
+use directories_next::ProjectDirs;
 use merge::Merge;
 use serde::Deserialize;
-use std::{mem, path::PathBuf};
+use std::{mem, path::PathBuf, fs::File};
 
 #[derive(Debug, Clone, Parser, Deserialize, Merge)]
 #[clap(author, version, about, long_about = None)]
@@ -83,5 +85,25 @@ pub fn from_use_12_flag(flag: bool) -> TimeConvention {
         TimeConvention::Imperial
     } else {
         TimeConvention::International
+    }
+}
+
+impl Config {
+    pub fn merge_config_files(&mut self) -> color_eyre::Result<()> {
+        if let Some(path) = &self.config {
+            let f = File::open(path)?;
+            match path
+                .extension()
+                .ok_or_else(|| eyre!("config path had no file extension"))?
+                .to_string_lossy()
+                .as_ref()
+            {
+                "json" => self.merge(serde_json::from_reader(f)?),
+                "yaml" | "yml" => self.merge(serde_yaml::from_reader(f)?),
+                ext => bail!("unknown file extension {ext}"),
+            }
+        }
+
+        Ok(())
     }
 }
