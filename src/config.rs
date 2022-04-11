@@ -34,8 +34,8 @@ pub struct Config {
     #[clap(long, required_unless_present = "config")]
     #[merge(strategy = overwrite)]
     pub hour_y: YAxis<Hour>,
-    /// Set to 12 to use 12-hour time instead of 24-hour time
-    #[clap(short, long, parse(from_flag = TimeConvention::from_use_12_flag))]
+    /// Use 12-hour time instead of 24-hour time
+    #[clap(name = "use-12-hour", long, parse(from_flag = from_use_12_flag))]
     #[merge(strategy = overwrite)]
     pub time: TimeConvention,
     /// X-axis position to use for the minute row
@@ -72,6 +72,16 @@ pub struct Config {
     pub size: u32,
 }
 
+/// Merge strategy that just replaces the object
 fn overwrite<T>(l: &mut T, r: T) {
     drop(mem::replace(l, r))
+}
+
+/// Interpret `true` as 12-hour time and vis versa
+pub fn from_use_12_flag(flag: bool) -> TimeConvention {
+    if flag {
+        TimeConvention::Imperial
+    } else {
+        TimeConvention::International
+    }
 }
