@@ -12,17 +12,19 @@ pub mod config;
 pub mod position;
 pub mod time_convention;
 
+/// Convenient iterator for every hour/minute combination in a day
 pub fn moments() -> impl Iterator<Item = (u8, u8)> {
     (0..24).flat_map(|h| iter::repeat(h).zip(0..60))
 }
 
+/// Draw a single moment onto the base canvas
 pub fn draw_moment(base: &RgbaImage, args: &Config, hour: u8, minute: u8) -> RgbaImage {
     let off_segment = segment(args.size, args.off_color.into());
     let on_segment_hour = segment(args.size, args.on_color.into());
     let on_segment_minute = if let Some(color) = args.minute_color {
         segment(args.size, color.into())
     } else {
-        on_segment_hour.clone()
+        on_segment_hour.clone() // TODO: just reference on_segment_hour
     };
 
     let mut canvas = base.clone();
@@ -42,6 +44,9 @@ pub fn draw_moment(base: &RgbaImage, args: &Config, hour: u8, minute: u8) -> Rgb
     canvas
 }
 
+/// Draw many moments onto a base canvas. This method doesn't actually do any of the work, instead
+/// returning an iterator that computes frames as it is consumed. Since the iterator clones a
+/// "canvas" image from the base image every iteration, the base image must outlive the iterator.
 pub fn draw_moments<'a>(
     base: &'a RgbaImage,
     args: &'a Config,
@@ -112,12 +117,15 @@ pub fn draw_composite(
             draw_unit(canvas, unit, on_segment_hour, off_segment, hour_x, hour_y);
         }
         TimeConvention::Imperial => {
+            // extract am/pm bit position
             let (am_pm_x, am_pm_y) = (&hour_x.single(4), &hour_y.single(4));
+            // resize hour positions to exclude am/pm bit
             let hour_x = &hour_x.resize::<4>();
             let hour_y = &hour_y.resize::<4>();
+            // draw hour bits (in 12-hour time)
             let unit = format_time::<4>(hour % 12);
             draw_unit(canvas, unit, on_segment_hour, off_segment, hour_x, hour_y);
-            // draw am/pm bit
+            // draw am/pm bit (0 for am, 1 for pm)
             let unit = [hour > 12];
             draw_unit(canvas, unit, on_segment_hour, off_segment, am_pm_x, am_pm_y);
         }
